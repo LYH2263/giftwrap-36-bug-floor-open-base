@@ -70,6 +70,23 @@ def test_save_pins_order_and_detail_matches_list(client):
     assert dry["sheet_len"] == got["sheet_len"]
 
 
+def test_rounded_up_order_pinned_in_list_and_detail(client):
+    # 标称改短到 0.2m：下料 0.31m 须托到 0.4m；列表与详情都钉住托升值不掉回 0.31
+    ok = client.put("/api/papers/1", json={"name": "哑光纸1.0m", "roll_width": 1.0, "stock_len": 0.2})
+    assert ok.status_code == 200
+    body = client.post("/api/estimate", json={"box_id": 1, "paper_id": 1, "save": True}).json()
+    assert (body["sheet_len"], body["order_m"]) == (0.31, 0.4)
+
+    listed = _runs(client)[0]["result"]
+    detail = client.get(f"/api/runs/{body['run_id']}").json()["result"]
+    assert listed["order_m"] == detail["order_m"] == 0.4
+    assert listed["stock_len"] == detail["stock_len"] == 0.2
+
+    # 算纸台同卷同参再干算，须与旧编号回看互证
+    dry = client.get("/api/estimate", params={"box_id": 1, "paper_id": 1}).json()
+    assert (dry["sheet_len"], dry["stock_len"], dry["order_m"]) == (0.31, 0.2, 0.4)
+
+
 def test_missing_or_unknown_paper_fails_without_row(client):
     r = client.post("/api/estimate", json={"box_id": 1, "save": True})  # 缺 paper_id
     assert r.status_code == 422
@@ -90,6 +107,15 @@ def test_non_positive_roll_width_fails_without_row(client):
     r = client.post("/api/estimate", json={"box_id": 1, "paper_id": 1, "save": True})
     assert r.status_code == 422
     assert _runs(client) == []
+
+
+def test_non_positive_nominal_update_rejected(client):
+    # 改标称时标称≤0 拒绝写入，库内标称保持原值
+    for bad in (0, -1):
+        r = client.put("/api/papers/1", json={"name": "哑光纸1.0m", "roll_width": 1.0, "stock_len": bad})
+        assert r.status_code == 422
+    kept = client.get("/api/papers").json()["items"][0]
+    assert kept["stock_len"] == 50.0
 
 
 def test_rename_nominal_keeps_old_runs_pinned(client):
