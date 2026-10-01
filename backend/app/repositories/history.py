@@ -42,8 +42,6 @@ def get_run(rid):
             return None
         d = dict(row)
         d["result"] = json.loads(d.pop("result_json"))
-        from app.services.floor_open_view import open_drop_floor, floor_projection
-        d["result"] = open_drop_floor(d["result"], view="detail")
-        return d  # OPEN_VIEW_WIRED
+        return d
     finally:
         c.close()

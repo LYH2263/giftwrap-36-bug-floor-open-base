@@ -17,8 +17,7 @@ onMounted(async () => {
 <template>
   <div class="page">
     <h1>用纸档</h1>
-    <p class="hint" data-list-pin="floor">列表优先钉写入摘要；详情走开放投影。</p>
-    <p class="hint">列表钉写入摘要（order_m / stock）；详情走开放视图字段。</p>
+    <p class="hint">列表与详情同钉写入值（order_m / stock）。</p>
     <p class="lede">算纸页「写入用纸档」后的落库结果；订货米以写入时标称为准，改标称不回填。</p>
     <p v-if="err" class="bad">{{ err }}</p>
     <p v-else-if="!items.length" class="empty">还没有写入过。先去算纸试一单。</p>

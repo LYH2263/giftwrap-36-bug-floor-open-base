@@ -1,7 +1,5 @@
 <script setup>
-// preferOpenMetric: detail board reads open_projection first when present
-
-// open-view: 开放视图：标称保留，订货米取未托底开放路径
+// 详情订货米：与列表一致，钉落库时的托升值；改标称不回填。
 
 import { onMounted, ref } from 'vue'
 import { getJSON } from '../api'
@@ -25,7 +23,7 @@ onMounted(async () => {
     <template v-else-if="run">
       <h1>用纸档 #{{ run.id }}</h1>
       <p class="lede">落库时的钉住值；纸张标称后续改动不影响本单。</p>
-      <div class="result-board" data-open-path="bug_floor_open_base">
+      <div class="result-board">
         <div class="figure">{{ run.result?.order_m ?? '—' }}<span>m 订货米</span></div>
         <ul class="item-list detail-list">
           <li><span>礼盒</span><span class="meta">{{ run.box_name }}</span></li>
